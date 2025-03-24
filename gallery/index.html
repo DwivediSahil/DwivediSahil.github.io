@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gallery img {
+            transition: transform 0.2s ease-in-out;
+        }
+        .gallery img:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto py-10">
+        <h1 class="text-center text-3xl font-bold mb-6">
+            <span id="typing-text">I love </span>
+        </h1>
+        <div id="gallery" class="grid grid-cols-3 gap-4 gallery"></div>
+    </div>
+    
+    <!-- Lightbox -->
+    <div id="lightbox" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 flex justify-center items-center hidden flex-col" onclick="closeLightbox(event)">
+        <img id="lightbox-img" class="max-w-full max-h-full mb-4" onclick="event.stopPropagation()">
+        <p id="lightbox-title" class="text-white text-lg bg-black bg-opacity-60 px-4 py-2 rounded"></p>
+        <button class="absolute top-5 right-5 text-white text-3xl" onclick="closeLightbox(event)">&times;</button>
+    </div>
+    
+    <script>
+        // Typing effect script
+        document.addEventListener("DOMContentLoaded", function () {
+            const words = ["Mountains", "Friends", "Places", "Dogs", "Boats", "Places", "Adventures"];
+            let wordIndex = 0;
+            let charIndex = 0;
+            let isDeleting = false;
+            const typingElement = document.getElementById("typing-text");
+            const baseText = "Pictures of  ";
+
+            function typeEffect() {
+                let currentWord = words[wordIndex];
+                let displayText = isDeleting
+                    ? currentWord.substring(0, charIndex - 1)
+                    : currentWord.substring(0, charIndex + 1);
+                
+                typingElement.innerText = baseText + displayText;
+                
+                if (!isDeleting && charIndex === currentWord.length) {
+                    isDeleting = true;
+                    setTimeout(typeEffect, 1000);
+                } else if (isDeleting && charIndex === 0) {
+                    isDeleting = false;
+                    wordIndex = (wordIndex + 1) % words.length;
+                    setTimeout(typeEffect, 500);
+                } else {
+                    charIndex += isDeleting ? -1 : 1;
+                    setTimeout(typeEffect, isDeleting ? 100 : 150);
+                }
+            }
+
+            typeEffect();
+        });
+
+        // Load the image gallery
+        async function loadGallery() {
+            try {
+                const response = await fetch('../assets/images.json');
+                const images = await response.json();
+                const galleryContainer = document.getElementById('gallery');
+                
+                images.forEach(image => {
+                    const item = document.createElement('div');
+                    item.classList.add('relative', 'cursor-pointer', 'rounded-lg', 'shadow-lg', 'overflow-hidden', 'group');
+                    image.url = "../"+image.url
+                    item.innerHTML = `
+                        <img src="${image.url}" alt="${image.title}" class="w-full h-auto" onclick="openLightbox('${image.url}', '${image.title}')">
+                        <div class="absolute bottom-0 left-0 w-full bg-black bg-opacity-60 text-white text-center text-sm py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            ${image.title}
+                        </div>
+                    `;
+
+                    galleryContainer.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading images:', error);
+            }
+        }
+        
+        function openLightbox(src, title) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox-title').textContent = title;
+            document.getElementById('lightbox').classList.remove('hidden');
+        }
+        
+        function closeLightbox(event) {
+            if (!event || event.target.id === "lightbox") {
+                document.getElementById('lightbox').classList.add('hidden');
+            }
+        }
+        
+        // Load the gallery when the page loads
+        window.onload = loadGallery;
+    </script>
+</body>
+</html>
