@@ -1,1 +1,230 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sahil's Notes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="/" >
+            <div class="flex items-center">
+                <img src="assets/image-assets/logo.png" alt="Logo" class="w-10 h-10 rounded-full mr-2">
+                <div>
+                    <h1 class="text-lg font-semibold text-gray-800">Sahil's notes</h1>
+                    <p class="text-sm text-gray-600">Field notes by Sahil Dwivedi</p>
+                </div>
+            </div>
+        	</a>
+            <nav class="hidden md:flex space-x-4 text-gray-700">
+                <a href="posts/" class="hover:text-gray-900">Blog</a>
+                <a href="gallery/" class="hover:text-gray-900">Gallery</a>
+                <a href="about/" class="hover:text-gray-900">About</a>
+            </nav>
+            <button class="md:hidden focus:outline-none">
+                <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+    </header>
+
+<div class="bg-gray-200 py-24 text-center" style="background-image: url('assets/image-assets/banner.png'); background-size: cover; background-position: center;">
+    <h2 class="text-5xl font-extrabold text-gray-800 mb-4" style="text-shadow: 3px 3px 8px white, -3px -3px 8px white;">Field Notes</h2>
+    <p class="text-xl font-semibold text-gray-700" style="text-shadow: 3px 3px 8px white, -3px -3px 8px white;">A collection of notes and thoughts</p>
+</div>
+
+    <div class="container mx-auto py-8 flex">
+        <div class="left-column w-2/3 pr-4">
+            <h2 class="text-2xl font-semibold mb-4">Featured Post</h2>
+            <div id="featured-post-container" class="featured-post bg-white rounded-md shadow-md p-6 mb-6"></div>
+		    <!-- Gallery -->
+		    <div class="container mx-auto py-10">
+		    <h2 class="text-2xl font-semibold mb-4">Gallery</h2>
+		        <h1 class="text-center text-3xl font-bold mb-6"></h1>
+		        <div id="gallery" class="grid grid-cols-3 gap-4 gallery"></div>
+		        <h1 class="text-center text-3xl font-bold mb-6"></h1>
+		    <a href="/gallery" class="text-green-500 hover:underline"><h2 class="text-xl font-semibold mb-4">Visit the Photo Gallery >></h2></a>
+		    </div>
+        </div>
+        <div id="recent-posts-container" class="right-column w-1/3 pl-4"></div>
+
+   </div>
+	 
+
+       <!-- Lightbox -->
+    <div id="lightbox" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 flex justify-center items-center hidden flex-col" onclick="closeLightbox(event)">
+        <img id="lightbox-img" class="max-w-full max-h-full mb-4" onclick="event.stopPropagation()">
+        <p id="lightbox-title" class="text-white text-lg bg-black bg-opacity-60 px-4 py-2 rounded"></p>
+        <button class="absolute top-5 right-5 text-white text-3xl" onclick="closeLightbox(event)">&times;</button>
+    </div>
+
+<!-- load featured post -->
+        <script>
+        async function loadFeaturedPost() {
+            try {
+                const response = await fetch('assets/posts.json');
+                const posts = await response.json();
+                const featuredPostContainer = document.getElementById('featured-post-container');
+
+                if (posts && posts.length > 0) {
+                    // Pick a random index
+                    const randomIndex = Math.floor(Math.random() * posts.length);
+                    const featuredPost = posts[randomIndex];
+
+                    const html = `
+                        <h3 class="post-title text-xl font-semibold mb-2">${featuredPost.title}</h3>
+                        <p class="post-content text-gray-700 mb-3">${featuredPost.text}</p>
+                        <a href="${featuredPost.url}" class="text-blue-500 hover:underline">Read More</a>
+                    `;
+                    featuredPostContainer.innerHTML = html;
+                } else {
+                    featuredPostContainer.innerHTML = '<p class="text-yellow-500">No posts available to feature.</p>';
+                }
+
+            } catch (error) {
+                console.error('Error loading featured post:', error);
+                document.getElementById('featured-post-container').innerHTML = '<p class="text-red-500">Failed to load featured post.</p>';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadFeaturedPost);
+        </script>
+
+ <!-- load recent posts	 -->
+ <script>
+        async function loadRecentPosts() {
+            try {
+                const response = await fetch('assets/posts.json');
+                const posts = await response.json();
+                const recentPostsContainer = document.getElementById('recent-posts-container');
+
+                let html = `
+                    <h2 class="text-2xl font-semibold mb-4">Recent Posts</h2>
+                `;
+
+                posts.forEach(post => {
+                    const shortText = post.text.substring(0, 80) + (post.text.length > 80 ? '...' : '');
+                    html += `
+                        <div class="other-post bg-white rounded-md shadow-sm p-4 mb-4">
+                            <h4 class="post-title text-lg font-semibold mb-2">${post.title}</h4>
+                            <p class="post-content text-gray-600 mb-3">${shortText}</p>
+                            <a href="${post.url}" class="text-blue-500 hover:underline">Read More</a>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <a href="/gallery" class="text-green-500 hover:underline"><h2 class="text-xl font-semibold mb-4">View all posts >></h2></a>
+                `;
+
+                recentPostsContainer.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                document.getElementById('recent-posts-container').innerHTML = '<p class="text-red-500">Failed to load posts.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadRecentPosts);
+    </script>
+
+
+    <script>
+
+// Load the image gallery
+        async function loadGallery() {
+            try {
+                const response = await fetch('../assets/images.json');
+                const allImages = await response.json();
+                const galleryContainer = document.getElementById('gallery');
+
+                // Function to shuffle an array (Fisher-Yates algorithm)
+                function shuffleArray(array) {
+                    for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]];
+                    }
+                    return array;
+                }
+
+                // Shuffle the array and then take the first 9 elements
+                const randomImages = shuffleArray(allImages).slice(0, 9);
+
+                randomImages.forEach(image => {
+                    const item = document.createElement('div');
+                    item.classList.add('relative', 'cursor-pointer', 'rounded-lg', 'shadow-lg', 'overflow-hidden', 'group');
+                    image.url = "../" + image.url;
+                    item.innerHTML = `
+                        <img src="${image.url}" alt="${image.title}" class="w-full h-auto" onclick="openLightbox('${image.url}', '${image.title}')">
+                        <div class="absolute bottom-0 left-0 w-full bg-black bg-opacity-60 text-white text-center text-sm py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            ${image.title}
+                        </div>
+                    `;
+
+                    galleryContainer.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading images:', error);
+            }
+        }
+        
+        function openLightbox(src, title) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox-title').textContent = title;
+            document.getElementById('lightbox').classList.remove('hidden');
+        }
+        
+        function closeLightbox(event) {
+            if (!event || event.target.id === "lightbox") {
+                document.getElementById('lightbox').classList.add('hidden');
+            }
+        }
+        
+        // Load the gallery when the page loads
+        window.onload = loadGallery;
+    </script>
+
+    <!-- Blog Posts -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+		<script>
+		fetch("posts.json")
+		.then(response => response.json())
+		.then(posts => {
+		  const container = document.getElementById("posts-list");
+		  posts.forEach(post => {
+		    const link = document.createElement("a");
+		    link.href = post.url;
+		    link.textContent = post.title;
+		    container.appendChild(link);
+		    container.appendChild(document.createElement("br"));
+		  });
+		});
+		</script>
+
+		<div id="posts-list"></div>
+    </main>
+
+    <script>
+        const menuButton = document.getElementById('menuButton');
+        const mainNav = document.getElementById('mainNav');
+
+        menuButton.addEventListener('click', () => {
+            mainNav.classList.toggle('hidden');
+        });
+    </script>
+
+
+    <!-- Footer -->
+	<footer class="bg-gray-800 text-gray-400 py-4 text-center">
+		<div class="container mx-auto px-4">
+		    <p class="text-sm">Sahil's notes</p>
+		    <p class="text-xs">Copyright © <span id="currentYear"></span> Sahil's notes | Designed and coded by Sahil Dwivedi | All rights reserved</p>
+		</div>
+	</footer>
+
+	<script>
+		document.getElementById("currentYear").textContent = new Date().getFullYear();
+	</script>
+</body>
+</html>

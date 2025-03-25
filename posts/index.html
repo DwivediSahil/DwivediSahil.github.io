@@ -113,18 +113,6 @@
             }
         }
         
-        function openLightbox(src, title) {
-            document.getElementById('lightbox-img').src = src;
-            document.getElementById('lightbox-title').textContent = title;
-            document.getElementById('lightbox').classList.remove('hidden');
-        }
-        
-        function closeLightbox(event) {
-            if (!event || event.target.id === "lightbox") {
-                document.getElementById('lightbox').classList.add('hidden');
-            }
-        }
-        
         // Load the gallery when the page loads
         window.onload = loadGallery;
     </script>
