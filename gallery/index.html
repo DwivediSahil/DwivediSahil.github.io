@@ -72,13 +72,13 @@
         </h1>
         <div id="gallery" class="grid gap-4 portrait:grid-cols-2 landscape:grid-cols-3"></div>
     </div>
-    
-    <!-- Lightbox -->
-    <div id="lightbox" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 flex justify-center items-center hidden flex-col" onclick="closeLightbox(event)">
-        <img id="lightbox-img" class="max-w-full max-h-full mb-4" onclick="event.stopPropagation()">
-        <p id="lightbox-title" class="text-white text-lg bg-black bg-opacity-60 px-4 py-2 rounded"></p>
-        <button class="absolute top-5 right-5 text-white text-3xl" onclick="closeLightbox(event)">&times;</button>
-    </div>
+
+<!-- lightbox -->
+<div id="lightbox" style="padding: 50px;" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 flex justify-center items-center hidden flex-col" onclick="closeLightbox(event)">
+    <img id="lightbox-img" class="max-w-full max-h-full mb-4" onclick="event.stopPropagation()">
+    <p id="lightbox-title" class="text-white text-lg bg-black bg-opacity-60 px-4 py-2 rounded"></p>
+    <button class="absolute top-5 right-5 text-white text-3xl" onclick="closeLightbox(event)">&times;</button>
+</div>
     
     <script>
         // Typing effect script
@@ -119,16 +119,18 @@ async function loadGallery() {
     let currentIndex = 0;
     const batchSize = 10; // Number of images to load per batch
 
+    // Fetch the images only once
     async function fetchImages() {
         try {
             const response = await fetch('../assets/images.json');
             images = await response.json();
-            loadMoreImages(); // Load initial batch
+            loadMoreImages(); // Load the first batch after data is fetched
         } catch (error) {
             console.error('Error loading images:', error);
         }
     }
 
+    // Function to load more images
     function loadMoreImages() {
         const galleryContainer = document.getElementById('gallery');
         const nextBatch = images.slice(currentIndex, currentIndex + batchSize);
@@ -138,7 +140,7 @@ async function loadGallery() {
             item.classList.add('relative', 'cursor-pointer', 'rounded-lg', 'shadow-lg', 'overflow-hidden', 'group');
             image.url = "../" + image.url;
             item.innerHTML = `
-                <img src="${image.url}" alt="${image.title}" class="w-full h-auto" onclick="openLightbox('${image.url}', '${image.title}')">
+                <img src="${image.url}" alt="${image.title}" class="w-full h-full object-cover" onclick="openLightbox('${image.url}', '${image.title}')">
                 <div class="absolute bottom-0 left-0 w-full bg-black bg-opacity-60 text-white text-center text-sm py-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     ${image.title}
                 </div>
@@ -149,10 +151,12 @@ async function loadGallery() {
         currentIndex += batchSize;
     }
 
+    // Handle scroll event (only triggers when more images need to be loaded)
     function handleScroll() {
         const scrollPosition = window.innerHeight + window.scrollY;
         const threshold = document.body.offsetHeight - 500; // Load more images 500px before bottom
 
+        // Load more images if user is near the bottom and there are more images to load
         if (scrollPosition >= threshold && currentIndex < images.length) {
             loadMoreImages();
         }
@@ -161,8 +165,8 @@ async function loadGallery() {
     // Attach scroll event listener
     document.addEventListener('scroll', handleScroll);
 
-    // Fetch and load initial images
-    fetchImages();
+    // Fetch images only once and load the first batch
+    await fetchImages();  // Ensure images are fetched first before the first load
 }
 
 // Call loadGallery when the page loads
@@ -180,9 +184,7 @@ loadGallery();
                 document.getElementById('lightbox').classList.add('hidden');
             }
         }
-        
-        // Load the gallery when the page loads
-        window.onload = loadGallery;
+
     </script>
 
     <!-- Footer -->
