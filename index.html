@@ -180,12 +180,12 @@
                     const item = document.createElement('div');
                     item.classList.add('relative', 'cursor-pointer', 'rounded-lg', 'shadow-lg', 'overflow-hidden', 'group');
                     image.url = "../" + image.url;
-                    item.innerHTML = `
-                        <img src="${image.url}" alt="${image.title}" class="w-full h-auto" onclick="openLightbox('${image.url}', '${image.title}')">
-                        <div class="absolute bottom-0 left-0 w-full bg-black bg-opacity-60 text-white text-center text-sm py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            ${image.title}
-                        </div>
-                    `;
+		            item.innerHTML = `
+		                <img src="${image.url}" alt="${image.title}" class="w-full h-full object-cover" onclick="openLightbox('${image.url}', '${image.title}')">
+		                <div class="absolute bottom-0 left-0 w-full bg-black bg-opacity-60 text-white text-center text-sm py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+		                    ${image.title}
+		                </div>
+		            `;
 
                     galleryContainer.appendChild(item);
                 });
