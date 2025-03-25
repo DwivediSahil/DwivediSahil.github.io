@@ -114,30 +114,60 @@
             typeEffect();
         });
 
-        // Load the image gallery
-        async function loadGallery() {
-            try {
-                const response = await fetch('../assets/images.json');
-                const images = await response.json();
-                const galleryContainer = document.getElementById('gallery');
-                
-                images.forEach(image => {
-                    const item = document.createElement('div');
-                    item.classList.add('relative', 'cursor-pointer', 'rounded-lg', 'shadow-lg', 'overflow-hidden', 'group');
-                    image.url = "../"+image.url
-                    item.innerHTML = `
-                        <img src="${image.url}" alt="${image.title}" class="w-full h-auto" onclick="openLightbox('${image.url}', '${image.title}')">
-                        <div class="absolute bottom-0 left-0 w-full bg-black bg-opacity-60 text-white text-center text-sm py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            ${image.title}
-                        </div>
-                    `;
+async function loadGallery() {
+    let images = [];
+    let currentIndex = 0;
+    const batchSize = 10; // Number of images to load per batch
 
-                    galleryContainer.appendChild(item);
-                });
-            } catch (error) {
-                console.error('Error loading images:', error);
-            }
+    async function fetchImages() {
+        try {
+            const response = await fetch('../assets/images.json');
+            images = await response.json();
+            loadMoreImages(); // Load initial batch
+        } catch (error) {
+            console.error('Error loading images:', error);
         }
+    }
+
+    function loadMoreImages() {
+        const galleryContainer = document.getElementById('gallery');
+        const nextBatch = images.slice(currentIndex, currentIndex + batchSize);
+
+        nextBatch.forEach(image => {
+            const item = document.createElement('div');
+            item.classList.add('relative', 'cursor-pointer', 'rounded-lg', 'shadow-lg', 'overflow-hidden', 'group');
+            image.url = "../" + image.url;
+            item.innerHTML = `
+                <img src="${image.url}" alt="${image.title}" class="w-full h-auto" onclick="openLightbox('${image.url}', '${image.title}')">
+                <div class="absolute bottom-0 left-0 w-full bg-black bg-opacity-60 text-white text-center text-sm py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    ${image.title}
+                </div>
+            `;
+            galleryContainer.appendChild(item);
+        });
+
+        currentIndex += batchSize;
+    }
+
+    function handleScroll() {
+        const scrollPosition = window.innerHeight + window.scrollY;
+        const threshold = document.body.offsetHeight - 500; // Load more images 500px before bottom
+
+        if (scrollPosition >= threshold && currentIndex < images.length) {
+            loadMoreImages();
+        }
+    }
+
+    // Attach scroll event listener
+    document.addEventListener('scroll', handleScroll);
+
+    // Fetch and load initial images
+    fetchImages();
+}
+
+// Call loadGallery when the page loads
+loadGallery();
+
         
         function openLightbox(src, title) {
             document.getElementById('lightbox-img').src = src;
