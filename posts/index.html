@@ -3,19 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sahil's Notes</title>
+    <title>Sahil's Notes - Blog</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .gallery img {
-            transition: transform 0.2s ease-in-out;
-        }
-        .gallery img:hover {
-            transform: scale(1.05);
-        }
-    </style>
 </head>
 <body class="bg-gray-100">
-        <!-- Header -->
     <header class="bg-white shadow-md">
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
             <a href="/" >
@@ -37,87 +28,22 @@
             </button>
         </div>
     </header>
-    <!-- Header -->
-
-
-    <div class="container mx-auto py-10">
-        <h1 class="text-center text-3xl font-bold mb-6">
-            <span id="typing-text">I love </span>
+    <div class="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <h1 id="blog-page-title" class="text-center text-3xl font-bold mb-6">
+            Blog Posts
         </h1>
-        <div id="gallery" class="grid grid-cols-3 gap-4 gallery"></div>
+        <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+        <div id="single-post-container" class="mt-8 hidden grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8">
+            <div id="main-post-content">
+                </div>
+            <div class="order-last md:order-none">
+                <div id="recent-posts-container">
+                    </div>
+            </div>
+        </div>
     </div>
-    
-    <!-- Lightbox -->
-    <div id="lightbox" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 flex justify-center items-center hidden flex-col" onclick="closeLightbox(event)">
-        <img id="lightbox-img" class="max-w-full max-h-full mb-4" onclick="event.stopPropagation()">
-        <p id="lightbox-title" class="text-white text-lg bg-black bg-opacity-60 px-4 py-2 rounded"></p>
-        <button class="absolute top-5 right-5 text-white text-3xl" onclick="closeLightbox(event)">&times;</button>
-    </div>
-    
-    <script>
-        // Typing effect script
-        document.addEventListener("DOMContentLoaded", function () {
-            const words = ["Mountains", "Friends", "Places", "Dogs", "Boats", "Places", "Adventures"];
-            let wordIndex = 0;
-            let charIndex = 0;
-            let isDeleting = false;
-            const typingElement = document.getElementById("typing-text");
-            const baseText = "Pictures of  ";
 
-            function typeEffect() {
-                let currentWord = words[wordIndex];
-                let displayText = isDeleting
-                    ? currentWord.substring(0, charIndex - 1)
-                    : currentWord.substring(0, charIndex + 1);
-                
-                typingElement.innerText = baseText + displayText;
-                
-                if (!isDeleting && charIndex === currentWord.length) {
-                    isDeleting = true;
-                    setTimeout(typeEffect, 1000);
-                } else if (isDeleting && charIndex === 0) {
-                    isDeleting = false;
-                    wordIndex = (wordIndex + 1) % words.length;
-                    setTimeout(typeEffect, 500);
-                } else {
-                    charIndex += isDeleting ? -1 : 1;
-                    setTimeout(typeEffect, isDeleting ? 100 : 150);
-                }
-            }
-
-            typeEffect();
-        });
-
-        // Load the image gallery
-        async function loadGallery() {
-            try {
-                const response = await fetch('../assets/images.json');
-                const images = await response.json();
-                const galleryContainer = document.getElementById('gallery');
-                
-                images.forEach(image => {
-                    const item = document.createElement('div');
-                    item.classList.add('relative', 'cursor-pointer', 'rounded-lg', 'shadow-lg', 'overflow-hidden', 'group');
-                    image.url = "../"+image.url
-                    item.innerHTML = `
-                        <img src="${image.url}" alt="${image.title}" class="w-full h-auto" onclick="openLightbox('${image.url}', '${image.title}')">
-                        <div class="absolute bottom-0 left-0 w-full bg-black bg-opacity-60 text-white text-center text-sm py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            ${image.title}
-                        </div>
-                    `;
-
-                    galleryContainer.appendChild(item);
-                });
-            } catch (error) {
-                console.error('Error loading images:', error);
-            }
-        }
-        
-        // Load the gallery when the page loads
-        window.onload = loadGallery;
-    </script>
-
-    <!-- Footer -->
     <footer class="bg-gray-800 text-gray-400 py-4 text-center">
         <div class="container mx-auto px-4">
             <p class="text-sm">Sahil's notes</p>
@@ -127,6 +53,122 @@
 
     <script>
         document.getElementById("currentYear").textContent = new Date().getFullYear();
+
+        async function loadPosts() {
+            try {
+                const response = await fetch('../assets/posts.json');
+                const posts = await response.json();
+                const postsGridContainer = document.getElementById('posts-grid');
+                let html = '';
+
+                posts.forEach(post => {
+                    html += `
+                        <div class="bg-white rounded-md shadow-md overflow-hidden transition transform hover:translate-y-[-4px] hover:shadow-lg">
+                            <img src="../${post['cover-image']}" alt="${post.title}" class="w-full h-48 object-cover rounded-t-md">
+                            <div class="p-4">
+                                <h3 class="text-xl font-semibold mb-2">${post.title}</h3>
+                                <p class="text-gray-700 mb-3">${post.subtitle}</p>
+                                <a href="/posts?post=${post.url}" class="text-blue-500 hover:underline">Read More</a>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                postsGridContainer.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                document.getElementById('posts-grid').innerHTML = '<p class="text-red-500 text-center">Failed to load posts.</p>';
+            }
+        }
+
+        async function loadSinglePost(postUrl) {
+            try {
+                const response = await fetch('../assets/posts.json');
+                const posts = await response.json();
+                const singlePost = posts.find(p => p.url === postUrl);
+                const mainPostContent = document.getElementById('main-post-content');
+                const singlePostContainer = document.getElementById('single-post-container');
+                const postsGridContainer = document.getElementById('posts-grid');
+                const blogPageTitle = document.getElementById('blog-page-title');
+
+                if (singlePost) {
+                    blogPageTitle.textContent = singlePost.title;
+                    const html = `
+                        <div class="bg-white rounded-md shadow-md overflow-hidden">
+                            <img src="../${singlePost['cover-image']}" alt="${singlePost.title}" class="w-full rounded-t-md">
+                            <div class="p-8">
+                                <h1 class="text-3xl font-bold mb-4">${singlePost.title}</h1>
+                                <p class="text-gray-700 leading-relaxed">${singlePost.text}</p>
+                                <p class="text-sm text-gray-500 mt-6">Published on: ${singlePost.datetime}</p>
+                                <p class="text-sm text-gray-500 mt-6">Sahil Dwivedi</p>
+                            </div>
+                        </div>
+                    `;
+                    mainPostContent.innerHTML = html;
+                    singlePostContainer.classList.remove('hidden');
+                    postsGridContainer.classList.add('hidden');
+                    loadRecentPostsForSidebar(); // Load recent posts when a single post is viewed
+                } else {
+                    blogPageTitle.textContent = 'Post Not Found';
+                    mainPostContent.innerHTML = '<p class="text-red-500 text-center">The requested post could not be found.</p>';
+                    singlePostContainer.classList.remove('hidden');
+                    postsGridContainer.classList.add('hidden');
+                }
+
+            } catch (error) {
+                console.error('Error loading post:', error);
+                const mainPostContent = document.getElementById('main-post-content');
+                const singlePostContainer = document.getElementById('single-post-container');
+                const postsGridContainer = document.getElementById('posts-grid');
+                const blogPageTitle = document.getElementById('blog-page-title');
+                blogPageTitle.textContent = 'Error Loading Post';
+                mainPostContent.innerHTML = '<p class="text-red-500 text-center">Failed to load the post.</p>';
+                singlePostContainer.classList.remove('hidden');
+                postsGridContainer.classList.add('hidden');
+            }
+        }
+
+        async function loadRecentPostsForSidebar() {
+            try {
+                const response = await fetch('../assets/posts.json');
+                const posts = await response.json();
+                const recentPostsContainer = document.getElementById('recent-posts-container');
+
+                let html = `
+                    <h2 class="text-xl font-semibold mb-4">Recent Posts</h2>
+                `;
+
+                posts.forEach(post => {
+                    const shortText = post.text.substring(0, 80) + (post.text.length > 80 ? '...' : '');
+                    html += `
+                        <div class="mb-4 bg-white rounded-md shadow-sm p-4">
+                            <img src="../${post['cover-image']}" alt="${post.title}" class="mb-2 rounded-md w-full object-cover h-32">
+                            <h4 class="text-lg font-semibold mb-2">${post.title}</h4>
+                            <p class="text-gray-600 mb-3">${shortText}</p>
+                            <a href="/posts?post=${post.url}" class="text-blue-500 hover:underline">Read More</a>
+                        </div>
+                    `;
+                });
+
+                recentPostsContainer.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading recent posts:', error);
+                document.getElementById('recent-posts-container').innerHTML = '<p class="text-red-500">Failed to load recent posts.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const postParam = urlParams.get('post');
+
+            if (postParam) {
+                loadSinglePost(postParam);
+            } else {
+                loadPosts();
+            }
+        });
     </script>
 
 </body>
