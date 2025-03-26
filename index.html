@@ -102,7 +102,7 @@
             <img src="${featuredPost['cover-image']}" alt="${featuredPost.title}" class="mb-4 rounded-md">
             <h3 class="post-title text-xl font-semibold mb-2">${featuredPost.title}</h3>
             <p class="post-content text-gray-700 mb-3">${featuredPost.text}</p>
-            <a href="${featuredPost.url}" class="text-blue-500 hover:underline">Read More</a>
+            <a href="posts?post=${featuredPost.url}" class="text-blue-500 hover:underline">Read More</a>
           `;
           featuredPostContainer.innerHTML = html;
         } else {
