@@ -85,75 +85,100 @@
     </div>
 
 
-<!-- load featured post -->
-    <script>
-    async function loadFeaturedPost() {
-      try {
-        const response = await fetch('assets/posts.json');
-        const posts = await response.json();
-        const featuredPostContainer = document.getElementById('featured-post-container');
+<script>
+		async function loadFeaturedPost() {
+			try {
+				const response = await fetch('assets/posts.json');
+				const posts = await response.json();
+				const featuredPostContainer = document.getElementById('featured-post-container');
 
-        if (posts && posts.length > 0) {
-          // Pick a random index
-          const randomIndex = Math.floor(Math.random() * posts.length);
-          const featuredPost = posts[randomIndex];
+				if (posts && posts.length > 0) {
+					// Pick a random index
+					const randomIndex = Math.floor(Math.random() * posts.length);
+					const featuredPost = posts[randomIndex];
 
-          const html = `
-            <img src="${featuredPost['cover-image']}" alt="${featuredPost.title}" class="mb-4 rounded-md">
-            <h3 class="post-title text-xl font-semibold mb-2">${featuredPost.title}</h3>
-            <p class="post-content text-gray-700 mb-3">${featuredPost.text}</p>
-            <a href="posts?post=${featuredPost.url}" class="text-blue-500 hover:underline">Keep reading >></a>
-          `;
-          featuredPostContainer.innerHTML = html;
-        } else {
-          featuredPostContainer.innerHTML = '<p class="text-yellow-500">No posts available to feature.</p>';
-        }
+					// Limit the text to a few words
+					const wordLimit = 100; // You can adjust this number
+					const truncatedText = featuredPost.text.split(' ').slice(0, wordLimit).join(' ') + (featuredPost.text.split(' ').length > wordLimit ? '...' : '');
 
-      } catch (error) {
-        console.error('Error loading featured post:', error);
-        document.getElementById('featured-post-container').innerHTML = '<p class="text-red-500">Failed to load featured post.</p>';
-      }
-    }
-    document.addEventListener('DOMContentLoaded', loadFeaturedPost);
-    </script>
+					const html = `
+						<img src="${featuredPost['cover-image']}" alt="${featuredPost.title}" class="mb-4 rounded-md">
+						<h3 class="post-title text-xl font-semibold mb-2">${featuredPost.title}</h3>
+						<p class="post-content text-gray-700 mb-3">${truncatedText}</p>
+						<a href="posts?post=${featuredPost.url}" class="text-blue-500 hover:underline">Keep reading >></a>
+					`;
+					featuredPostContainer.innerHTML = html;
+				} else {
+					featuredPostContainer.innerHTML = '<p class="text-yellow-500">No posts available to feature.</p>';
+				}
+
+			} catch (error) {
+				console.error('Error loading featured post:', error);
+				document.getElementById('featured-post-container').innerHTML = '<p class="text-red-500">Failed to load featured post.</p>';
+			}
+		}
+		document.addEventListener('DOMContentLoaded', loadFeaturedPost);
+		</script>
 
 <script>
-    async function loadRecentPosts() {
-      try {
-        const response = await fetch('assets/posts.json');
-        const posts = await response.json();
-        const recentPostsContainer = document.getElementById('recent-posts-container');
+		async function loadRecentPosts() {
+			try {
+				const response = await fetch('assets/posts.json');
+				const posts = await response.json();
+				const recentPostsContainer = document.getElementById('recent-posts-container');
 
-        let html = `
-          <h2 class="text-2xl font-semibold mb-4">Recent Posts</h2>
-        `;
+				let html = `
+					<h2 class="text-2xl font-semibold mb-4">Recent Posts</h2>
+				`;
 
-        posts.forEach(post => {
-          const shortText = post.text.substring(0, 80) + (post.text.length > 80 ? '...' : '');
-          html += `
-            <div class="other-post bg-white rounded-md shadow-sm p-4 mb-4">
-              <img src="${post['cover-image']}" alt="${post.title}" class="mb-2 rounded-md w-full object-cover h-64">
-              <h4 class="post-title text-lg font-semibold mb-2">${post.title}</h4>
-              <p class="post-content text-gray-600 mb-3">${shortText}</p>
-              <a href="posts?post=${post.url}" class="text-blue-500 hover:underline">Read More</a>
-            </div>
-          `;
-        });
+				if (posts && posts.length > 0) {
+					const numberOfPostsToDisplay = Math.min(8, posts.length);
+					const randomPosts = [];
+					const allPostIndices = Array.from(Array(posts.length).keys());
 
-        html += `
-          <a href="/gallery" class="text-green-500 hover:underline"><h2 class="text-xl font-semibold mb-4">View all posts >></h2></a>
-        `;
+					// Shuffle the indices randomly
+					for (let i = allPostIndices.length - 1; i > 0; i--) {
+						const j = Math.floor(Math.random() * (i + 1));
+						[allPostIndices[i], allPostIndices[j]] = [allPostIndices[j], allPostIndices[i]];
+					}
 
-        recentPostsContainer.innerHTML = html;
+					// Select the first 'numberOfPostsToDisplay' indices
+					const selectedIndices = allPostIndices.slice(0, numberOfPostsToDisplay);
 
-      } catch (error) {
-        console.error('Error loading posts:', error);
-        document.getElementById('recent-posts-container').innerHTML = '<p class="text-red-500">Failed to load posts.</p>';
-      }
-    }
+					// Get the random posts
+					selectedIndices.forEach(index => {
+						randomPosts.push(posts[index]);
+					});
 
-    document.addEventListener('DOMContentLoaded', loadRecentPosts);
-  </script>
+					randomPosts.forEach(post => {
+						const shortText = post.text.substring(0, 80) + (post.text.length > 80 ? '...' : '');
+						html += `
+							<div class="other-post bg-white rounded-md shadow-sm p-4 mb-4">
+								<img src="${post['cover-image']}" alt="${post.title}" class="mb-2 rounded-md w-full object-cover h-64">
+								<h4 class="post-title text-lg font-semibold mb-2">${post.title}</h4>
+								<p class="post-content text-gray-600 mb-3">${shortText}</p>
+								<a href="posts?post=${post.url}" class="text-blue-500 hover:underline">Read More</a>
+							</div>
+						`;
+					});
+				} else {
+					html += '<p class="text-yellow-500">No posts available.</p>';
+				}
+
+				html += `
+					<a href="/posts" class="text-green-500 hover:underline"><h2 class="text-xl font-semibold mb-4">View all posts >></h2></a>
+				`;
+
+				recentPostsContainer.innerHTML = html;
+
+			} catch (error) {
+				console.error('Error loading posts:', error);
+				document.getElementById('recent-posts-container').innerHTML = '<p class="text-red-500">Failed to load posts.</p>';
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', loadRecentPosts);
+	</script>
 
 
     <script>

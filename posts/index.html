@@ -156,36 +156,50 @@
             }
         }
 
-        async function loadRecentPostsForSidebar() {
-            try {
-                const response = await fetch('../assets/posts.json');
-                const posts = await response.json();
-                const recentPostsContainer = document.getElementById('recent-posts-container');
+async function loadRecentPostsForSidebar() {
+                  try {
+                        const response = await fetch('../assets/posts.json');
+                        const posts = await response.json();
+                        const recentPostsContainer = document.getElementById('recent-posts-container');
 
-                let html = `
-                    <h2 class="text-xl font-semibold mb-4">Recent Posts</h2>
-                `;
+                        let html = `
+                              <h2 class="text-xl font-semibold mb-4">Recent Posts</h2>
+                        `;
 
-                posts.forEach(post => {
-                    const shortText = post.text.substring(0, 80) + (post.text.length > 80 ? '...' : '');
-                    html += `
-                        <div class="mb-4 bg-white rounded-md shadow-sm p-4">
-                            <img src="../${post['cover-image']}" alt="${post.title}" class="mb-2 rounded-md w-full object-cover h-32">
-                            <h4 class="text-lg font-semibold mb-2">${post.title}</h4>
-                            <p class="text-gray-600 mb-3">${shortText}</p>
-                            <a href="/posts?post=${post.url}" class="text-blue-500 hover:underline">Read More</a>
-                        </div>
-                    `;
-                });
+                        if (posts && posts.length > 0) {
+                              // Assuming each post object has a 'date' field (e.g., 'YYYY-MM-DD' or a timestamp)
+                              // Sort posts by date in descending order (most recent first)
+                              posts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-                recentPostsContainer.innerHTML = html;
+                              // Take the first 8 posts (or fewer if there are less than 8)
+                              const recentPosts = posts.slice(0, 8);
 
-            } catch (error) {
-                console.error('Error loading recent posts:', error);
-                document.getElementById('recent-posts-container').innerHTML = '<p class="text-red-500">Failed to load recent posts.</p>';
+                              recentPosts.forEach(post => {
+                                    const shortText = post.text.substring(0, 80) + (post.text.length > 80 ? '...' : '');
+                                    html += `
+                                          <div class="mb-4 bg-white rounded-md shadow-sm p-4">
+                                                <img src="../${post['cover-image']}" alt="${post.title}" class="mb-2 rounded-md w-full object-cover h-32">
+                                                <h4 class="text-lg font-semibold mb-2">${post.title}</h4>
+                                                <p class="text-gray-600 mb-3">${shortText}</p>
+                                                <a href="/posts?post=${post.url}" class="text-blue-500 hover:underline">Read More</a>
+                                    </div>
+                              `;
+                        });
+                        } else {
+                              html += '<p class="text-yellow-500">No posts available.</p>';
+                        }
+
+                        recentPostsContainer.innerHTML = html;
+
+                  } catch (error) {
+                        console.error('Error loading recent posts:', error);
+                        document.getElementById('recent-posts-container').innerHTML = '<p class="text-red-500">Failed to load recent posts.</p>';
+                  }
             }
-        }
 
+            document.addEventListener('DOMContentLoaded', loadRecentPostsForSidebar);
+      </script>
+      <script>
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const postParam = urlParams.get('post');
