@@ -445,6 +445,11 @@
     PageTransition.init();
     ScrollAnimations.init();
 
+    // Add Takehara topographic background
+    const topo = document.createElement('div');
+    topo.className = 'takehara-topo';
+    document.body.appendChild(topo);
+
     // Set current year in footer
     const yearEl = $('#currentYear');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
