@@ -117,31 +117,28 @@ p { color: var(--text-secondary); font-size: 1.0625rem; }
   50% { transform: translateY(-5px); }
 }
 
-.fade-in { animation: fadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-.fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-.fade-in-scale { animation: fadeInScale 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-.slide-in-right { animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-
-/* Staggered animations for lists */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
-.stagger-6 { animation-delay: 0.3s; }
-
-/* Page transitions */
-body {
-  opacity: 1;
-  transition: opacity 0.2s ease;
-}
-body.page-leaving {
-  opacity: 0;
+/* Animations - desktop only for performance */
+@media (min-width: 768px) {
+  .fade-in { animation: fadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+  .fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+  .fade-in-scale { animation: fadeInScale 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+  .slide-in-right { animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
+  main { animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
 }
 
-/* Main content animation */
-main {
-  animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Skeleton Loading */
@@ -164,17 +161,23 @@ main {
   top: 0;
   z-index: 100;
   background: var(--header-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: var(--shadow);
-  transition: background var(--transition-normal);
+}
+@media (min-width: 768px) {
+  .header {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 }
 
 .header-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 0;
+  padding: 1rem 1.5rem;
+}
+@media (min-width: 768px) {
+  .header-inner { padding: 1rem 0; }
 }
 
 .logo { display: flex; align-items: center; gap: 0.75rem; }
