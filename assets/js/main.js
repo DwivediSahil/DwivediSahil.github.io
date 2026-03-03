@@ -7,6 +7,34 @@
   'use strict';
 
   // ============================================
+  // LANGUAGE REDIRECT
+  // ============================================
+
+  (function() {
+    // Only run on root pages (not already in /ja/)
+    const path = window.location.pathname;
+    const isJapanesePage = path.startsWith('/ja/');
+    const isEnglishPage = !isJapanesePage;
+
+    // Check if user has manually chosen a language
+    const manualLang = localStorage.getItem('preferred-lang');
+    if (manualLang) return; // User has made a choice, don't auto-redirect
+
+    // Detect browser language
+    const browserLang = navigator.language || navigator.userLanguage || '';
+    const isJapanese = browserLang.toLowerCase().startsWith('ja');
+
+    // Redirect if needed
+    if (isJapanese && isEnglishPage) {
+      // Japanese user on English page -> redirect to Japanese
+      window.location.href = '/ja' + path;
+    } else if (!isJapanese && isJapanesePage) {
+      // Non-Japanese user on Japanese page -> redirect to English
+      window.location.href = path.replace(/^\/ja/, '') || '/';
+    }
+  })();
+
+  // ============================================
   // UTILITIES
   // ============================================
 
@@ -453,6 +481,15 @@
     // Set current year in footer
     const yearEl = $('#currentYear');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // Language switch - save preference when clicked
+    $$('.lang-switch').forEach(link => {
+      link.addEventListener('click', () => {
+        const href = link.getAttribute('href');
+        const lang = href.startsWith('/ja') ? 'ja' : 'en';
+        localStorage.setItem('preferred-lang', lang);
+      });
+    });
 
     // Page load animation complete
     document.body.style.opacity = '1';
