@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Photo gallery by Sahil Dwivedi - featuring mountains, adventures, travel, and more.">
+  <meta property="og:title" content="Gallery - Sahil's Notes">
+  <meta property="og:description" content="Photo gallery featuring mountains, adventures, travel, and more.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="author" content="Sahil Dwivedi (サヒル・ディウェディ)">
+  <meta name="keywords" content="Sahil Dwivedi, サヒル・ディウェディ, gallery, photography, travel, Japan">
+  <link rel="canonical" href="https://sahildwivedi.com/gallery/">
+  <link rel="alternate" hreflang="en" href="https://sahildwivedi.com/gallery/">
+  <link rel="alternate" hreflang="ja" href="https://sahildwivedi.com/ja/gallery/">
+  <link rel="alternate" hreflang="x-default" href="https://sahildwivedi.com/gallery/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <title>Gallery - Sahil's Notes</title>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="../" class="logo">
+        <img src="../assets/image-assets/logo.png" alt="Sahil's Notes" width="40" height="40">
+        <div class="logo-text">
+          <h1>Sahil's notes</h1>
+          <p>Field notes by Sahil Dwivedi</p>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="../posts/">Blog</a>
+        <a href="../gallery/">Gallery</a>
+        <a href="../about/">About</a>
+        <a href="/ja/gallery/" class="lang-switch" title="日本語">JA</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode" onclick="SahilNotes.Theme.toggle()"></button>
+      </nav>
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu">
+      <a href="../posts/">Blog</a>
+      <a href="../gallery/">Gallery</a>
+      <a href="../about/">About</a>
+      <a href="/ja/gallery/" class="lang-switch">日本語</a>
+      <button class="theme-toggle" aria-label="Toggle dark mode" onclick="SahilNotes.Theme.toggle()" style="margin-top:0.5rem;">
+        <span class="theme-label">Toggle theme</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container py-4">
+    <h1 class="text-center mb-3">
+      <span id="typing-text" class="typing-cursor">Pictures of </span>
+    </h1>
+
+    <!-- Search Box -->
+    <div class="search-box gallery-search">
+      <span class="search-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </span>
+      <input type="text" id="gallery-search" class="search-input" placeholder="Search photos..." autocomplete="off">
+    </div>
+    <p id="search-results-count" class="search-results-count hidden"></p>
+
+    <div id="gallery" class="gallery-grid"></div>
+    <div id="loading-indicator" class="text-center py-2 hidden">
+      <p class="text-muted">Loading more...</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>Sahil's Notes | サヒル・ディウェディ (Sahil Dwivedi)</p>
+      <p>Copyright &copy; <span id="currentYear"></span> Sahil Dwivedi (サヒル・ディウェディ) | Designed and coded by Sahil Dwivedi | All rights reserved</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    const { $, Skeleton, Lightbox, debounce } = SahilNotes;
+
+    // Typing effect
+    (function() {
+      const words = ["Mountains", "Friends", "Places", "Dogs", "Boats", "Adventures"];
+      let wordIndex = 0;
+      let charIndex = 0;
+      let isDeleting = false;
+      const el = $('#typing-text');
+      const baseText = "Pictures of ";
+
+      function type() {
+        const word = words[wordIndex];
+        const display = isDeleting
+          ? word.substring(0, charIndex - 1)
+          : word.substring(0, charIndex + 1);
+
+        el.textContent = baseText + display;
+
+        if (!isDeleting && charIndex === word.length) {
+          isDeleting = true;
+          setTimeout(type, 1500);
+        } else if (isDeleting && charIndex === 0) {
+          isDeleting = false;
+          wordIndex = (wordIndex + 1) % words.length;
+          setTimeout(type, 300);
+        } else {
+          charIndex += isDeleting ? -1 : 1;
+          setTimeout(type, isDeleting ? 50 : 100);
+        }
+      }
+
+      type();
+    })();
+
+    // Gallery with search and infinite scroll
+    (function() {
+      let allImages = [];
+      let filteredImages = [];
+      let currentIndex = 0;
+      const batchSize = 16;
+      let loading = false;
+      let searchMode = false;
+      const container = $('#gallery');
+      const loadingIndicator = $('#loading-indicator');
+      const searchInput = $('#gallery-search');
+      const resultsCount = $('#search-results-count');
+
+      // Show skeleton initially
+      container.innerHTML = Skeleton.galleryGrid(16);
+
+      async function fetchImages() {
+        try {
+          const response = await fetch('../assets/images.json');
+          allImages = await response.json();
+          filteredImages = allImages;
+          Lightbox.setImages(allImages.map(img => ({ url: '../' + img.url, title: img.title })));
+          loadMore();
+        } catch (error) {
+          console.error('Error loading images:', error);
+          container.innerHTML = '<p class="text-muted text-center">Failed to load gallery.</p>';
+        }
+      }
+
+      function renderImage(img, index) {
+        const item = document.createElement('div');
+        item.className = 'gallery-item fade-in';
+        item.onclick = () => Lightbox.open('../' + img.url, img.title, index);
+        item.innerHTML = `
+          <img src="../${img.url}" alt="${img.title}" loading="lazy" class="loading" onload="this.classList.remove('loading');this.classList.add('loaded');">
+          <div class="gallery-item-overlay">${img.title}</div>
+        `;
+        return item;
+      }
+
+      function loadMore() {
+        if (loading || currentIndex >= filteredImages.length) return;
+        loading = true;
+        loadingIndicator.classList.remove('hidden');
+
+        const batch = filteredImages.slice(currentIndex, currentIndex + batchSize);
+
+        // Clear skeleton on first load
+        if (currentIndex === 0) container.innerHTML = '';
+
+        batch.forEach((img, i) => {
+          const globalIndex = currentIndex + i;
+          container.appendChild(renderImage(img, globalIndex));
+        });
+
+        currentIndex += batchSize;
+        loading = false;
+        loadingIndicator.classList.add('hidden');
+      }
+
+      function searchImages(query) {
+        const q = query.toLowerCase().trim();
+        currentIndex = 0;
+        container.innerHTML = '';
+
+        if (!q) {
+          searchMode = false;
+          filteredImages = allImages;
+          resultsCount.classList.add('hidden');
+          Lightbox.setImages(allImages.map(img => ({ url: '../' + img.url, title: img.title })));
+        } else {
+          searchMode = true;
+          filteredImages = allImages.filter(img =>
+            img.title.toLowerCase().includes(q) ||
+            (img.date && img.date.toLowerCase().includes(q))
+          );
+          resultsCount.textContent = `${filteredImages.length} photo${filteredImages.length !== 1 ? 's' : ''} found`;
+          resultsCount.classList.remove('hidden');
+          Lightbox.setImages(filteredImages.map(img => ({ url: '../' + img.url, title: img.title })));
+        }
+
+        if (filteredImages.length === 0) {
+          container.innerHTML = '<div class="no-results"><p>No photos found matching your search.</p></div>';
+        } else {
+          loadMore();
+        }
+      }
+
+      // Setup search
+      const debouncedSearch = debounce(searchImages, 200);
+      searchInput.addEventListener('input', (e) => debouncedSearch(e.target.value));
+
+      // Scroll handler with throttle
+      let ticking = false;
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          const scrollPos = window.innerHeight + window.scrollY;
+          const threshold = document.body.offsetHeight - 500;
+          if (scrollPos >= threshold && currentIndex < filteredImages.length) {
+            loadMore();
+          }
+          ticking = false;
+        });
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      fetchImages();
+    })();
+  </script>
+</body>
+</html>

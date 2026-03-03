@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Blog posts by Sahil Dwivedi - travel stories, technical writings, and more.">
+  <meta property="og:title" content="Blog - Sahil's Notes">
+  <meta property="og:description" content="Blog posts featuring travel stories, technical writings, and more.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="author" content="Sahil Dwivedi (サヒル・ディウェディ)">
+  <meta name="keywords" content="Sahil Dwivedi, サヒル・ディウェディ, blog, travel, photography, Japan, technology">
+  <link rel="canonical" href="https://sahildwivedi.com/posts/">
+  <link rel="alternate" hreflang="en" href="https://sahildwivedi.com/posts/">
+  <link rel="alternate" hreflang="ja" href="https://sahildwivedi.com/ja/posts/">
+  <link rel="alternate" hreflang="x-default" href="https://sahildwivedi.com/posts/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <title>Blog - Sahil's Notes</title>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="../" class="logo">
+        <img src="../assets/image-assets/logo.png" alt="Sahil's Notes" width="40" height="40">
+        <div class="logo-text">
+          <h1>Sahil's notes</h1>
+          <p>Field notes by Sahil Dwivedi</p>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="../posts/">Blog</a>
+        <a href="../gallery/">Gallery</a>
+        <a href="../about/">About</a>
+        <a href="/ja/posts/" class="lang-switch" title="日本語">JA</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode" onclick="SahilNotes.Theme.toggle()"></button>
+      </nav>
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu">
+      <a href="../posts/">Blog</a>
+      <a href="../gallery/">Gallery</a>
+      <a href="../about/">About</a>
+      <a href="/ja/posts/" class="lang-switch">日本語</a>
+      <button class="theme-toggle" aria-label="Toggle dark mode" onclick="SahilNotes.Theme.toggle()" style="margin-top:0.5rem;">
+        <span class="theme-label">Toggle theme</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container py-4">
+    <h1 id="page-title" class="text-center mb-3">Blog Posts</h1>
+
+    <!-- Search Box (only shown on posts list) -->
+    <div id="search-container" class="search-box">
+      <span class="search-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </span>
+      <input type="text" id="search-input" class="search-input" placeholder="Search posts..." autocomplete="off">
+    </div>
+
+    <!-- Posts Grid -->
+    <div id="posts-grid" class="grid grid-3"></div>
+
+    <!-- Single Post View -->
+    <div id="single-post" class="hidden">
+      <div class="layout-2col">
+        <div class="col-main">
+          <div id="post-content" class="post-single"></div>
+        </div>
+        <aside class="col-side">
+          <div class="sidebar-section">
+            <h2>More Posts</h2>
+            <div id="related-posts"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>Sahil's Notes | サヒル・ディウェディ (Sahil Dwivedi)</p>
+      <p>Copyright &copy; <span id="currentYear"></span> Sahil Dwivedi (サヒル・ディウェディ) | Designed and coded by Sahil Dwivedi | All rights reserved</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    const { $, $$, Skeleton, getReadingTime, debounce } = SahilNotes;
+
+    let allPosts = [];
+
+    // Check if viewing single post
+    const urlParams = new URLSearchParams(window.location.search);
+    const postParam = urlParams.get('post');
+
+    if (postParam) {
+      loadSinglePost(postParam);
+    } else {
+      loadPostsList();
+    }
+
+    // Load posts list
+    async function loadPostsList() {
+      const container = $('#posts-grid');
+      container.innerHTML = Skeleton.card().repeat(6);
+
+      try {
+        const response = await fetch('../assets/posts.json');
+        allPosts = await response.json();
+        renderPosts(allPosts);
+        setupSearch();
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        container.innerHTML = '<p class="text-muted text-center">Failed to load posts.</p>';
+      }
+    }
+
+    function renderPosts(posts) {
+      const container = $('#posts-grid');
+
+      if (posts.length === 0) {
+        container.innerHTML = '<div class="no-results"><p>No posts found matching your search.</p></div>';
+        return;
+      }
+
+      container.innerHTML = posts.map(post => {
+        const readTime = getReadingTime(post.text);
+        return `
+          <a href="/posts?post=${post.url}" class="card fade-in">
+            <img src="../${post['cover-image']}" alt="${post.title}" class="card-image" loading="lazy">
+            <div class="card-body">
+              <div class="reading-time">${SahilNotes.Icons.clock} ${readTime}</div>
+              <h3 class="card-title">${post.title}</h3>
+              <p class="card-text">${post.subtitle || ''}</p>
+              <span class="card-link">Read More &rarr;</span>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    function setupSearch() {
+      const input = $('#search-input');
+      const search = debounce((query) => {
+        const q = query.toLowerCase().trim();
+        if (!q) {
+          renderPosts(allPosts);
+          return;
+        }
+        const filtered = allPosts.filter(post =>
+          post.title.toLowerCase().includes(q) ||
+          (post.subtitle && post.subtitle.toLowerCase().includes(q)) ||
+          post.text.toLowerCase().includes(q)
+        );
+        renderPosts(filtered);
+      }, 200);
+
+      input.addEventListener('input', (e) => search(e.target.value));
+    }
+
+    // Load single post
+    async function loadSinglePost(postUrl) {
+      $('#search-container').classList.add('hidden');
+      $('#posts-grid').classList.add('hidden');
+      $('#single-post').classList.remove('hidden');
+
+      const postContent = $('#post-content');
+      postContent.innerHTML = `
+        <div style="padding:2rem;">
+          ${Skeleton.featuredPost()}
+        </div>
+      `;
+
+      try {
+        const response = await fetch('../assets/posts.json');
+        const posts = await response.json();
+        const post = posts.find(p => p.url === postUrl);
+
+        if (post) {
+          const readTime = getReadingTime(post.text);
+          const pageUrl = window.location.href;
+
+          // Update page title
+          $('#page-title').textContent = post.title;
+          document.title = `${post.title} - Sahil's Notes`;
+
+          postContent.innerHTML = `
+            <img src="../${post['cover-image']}" alt="${post.title}">
+            <div class="post-single-body">
+              <div class="reading-time">${SahilNotes.Icons.clock} ${readTime}</div>
+              <h1>${post.title}</h1>
+              <div class="post-single-content">
+                <p>${post.text}</p>
+              </div>
+              <div class="post-meta">
+                <p>Published: ${post.datetime || 'Unknown date'}</p>
+                <p>By Sahil Dwivedi</p>
+              </div>
+            </div>
+          `;
+          postContent.classList.add('fade-in');
+
+          // Load related posts
+          loadRelatedPosts(posts, postUrl);
+        } else {
+          postContent.innerHTML = `
+            <div class="error-page" style="min-height:40vh;">
+              <h2>Post Not Found</h2>
+              <p>The requested post could not be found.</p>
+              <a href="/posts/" class="btn btn-primary">View All Posts</a>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading post:', error);
+        postContent.innerHTML = '<p class="text-muted text-center" style="padding:2rem;">Failed to load post.</p>';
+      }
+    }
+
+    function loadRelatedPosts(posts, currentUrl) {
+      const container = $('#related-posts');
+      const otherPosts = posts.filter(p => p.url !== currentUrl);
+      const shuffled = [...otherPosts].sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, 5);
+
+      container.innerHTML = selected.map(post => {
+        const readTime = getReadingTime(post.text);
+        const shortText = post.text.substring(0, 60) + '...';
+        return `
+          <a href="/posts?post=${post.url}" class="sidebar-post fade-in">
+            <img src="../${post['cover-image']}" alt="${post.title}" loading="lazy">
+            <div class="reading-time">${SahilNotes.Icons.clock} ${readTime}</div>
+            <h4>${post.title}</h4>
+            <p>${shortText}</p>
+            <span class="card-link">Read More &rarr;</span>
+          </a>
+        `;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

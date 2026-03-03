@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Page not found - Sahil's Notes">
+  <meta name="author" content="Sahil Dwivedi (サヒル・ディウェディ)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <title>404 - Page Not Found | Sahil's Notes</title>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="/" class="logo">
+        <img src="assets/image-assets/logo.png" alt="Sahil's Notes" width="40" height="40">
+        <div class="logo-text">
+          <h1>Sahil's notes</h1>
+          <p>Field notes by Sahil Dwivedi</p>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="/posts/">Blog</a>
+        <a href="/gallery/">Gallery</a>
+        <a href="/about/">About</a>
+        <a href="/ja/" class="lang-switch" title="日本語">JA</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode" onclick="SahilNotes.Theme.toggle()"></button>
+      </nav>
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu">
+      <a href="/posts/">Blog</a>
+      <a href="/gallery/">Gallery</a>
+      <a href="/about/">About</a>
+      <a href="/ja/" class="lang-switch">日本語</a>
+      <button class="theme-toggle" aria-label="Toggle dark mode" onclick="SahilNotes.Theme.toggle()" style="margin-top:0.5rem;">
+        <span class="theme-label">Toggle theme</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <div class="error-page">
+      <h1>404</h1>
+      <h2>Page Not Found</h2>
+      <p>The page you're looking for seems to have wandered off on its own adventure. Let's get you back on track.</p>
+
+      <!-- Quick Search -->
+      <div class="search-box" style="max-width:400px;width:100%;margin-bottom:1.5rem;">
+        <span class="search-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </span>
+        <input type="text" id="search-input" class="search-input" placeholder="Search posts..." autocomplete="off">
+      </div>
+      <div id="search-results" style="max-width:400px;width:100%;text-align:left;"></div>
+
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:1rem;">
+        <a href="/" class="btn btn-primary">Go Home</a>
+        <a href="/posts/" class="btn" style="background:var(--bg-tertiary);">Browse Posts</a>
+        <a href="/gallery/" class="btn" style="background:var(--bg-tertiary);">View Gallery</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>Sahil's Notes | サヒル・ディウェディ (Sahil Dwivedi)</p>
+      <p>Copyright &copy; <span id="currentYear"></span> Sahil Dwivedi (サヒル・ディウェディ) | Designed and coded by Sahil Dwivedi | All rights reserved</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    const { $, debounce, getReadingTime } = SahilNotes;
+
+    let posts = [];
+
+    // Load posts for search
+    fetch('assets/posts.json')
+      .then(r => r.json())
+      .then(data => { posts = data; })
+      .catch(() => {});
+
+    const search = debounce((query) => {
+      const results = $('#search-results');
+      const q = query.toLowerCase().trim();
+
+      if (!q || posts.length === 0) {
+        results.innerHTML = '';
+        return;
+      }
+
+      const filtered = posts.filter(post =>
+        post.title.toLowerCase().includes(q) ||
+        (post.subtitle && post.subtitle.toLowerCase().includes(q))
+      ).slice(0, 5);
+
+      if (filtered.length === 0) {
+        results.innerHTML = '<p class="text-muted" style="padding:0.5rem 0;">No posts found.</p>';
+        return;
+      }
+
+      results.innerHTML = filtered.map(post => `
+        <a href="/posts?post=${post.url}" style="display:block;padding:0.75rem;background:var(--bg-secondary);border-radius:0.375rem;margin-bottom:0.5rem;box-shadow:var(--shadow);">
+          <strong style="color:var(--text-primary);">${post.title}</strong>
+          <p style="font-size:0.875rem;margin:0.25rem 0 0;color:var(--text-muted);">${getReadingTime(post.text)}</p>
+        </a>
+      `).join('');
+    }, 200);
+
+    $('#search-input').addEventListener('input', (e) => search(e.target.value));
+  </script>
+</body>
+</html>

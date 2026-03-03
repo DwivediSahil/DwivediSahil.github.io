@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="About Sahil Dwivedi - field notes author, traveler, and technologist.">
+  <meta property="og:title" content="About - Sahil's Notes">
+  <meta property="og:description" content="Learn more about Sahil Dwivedi, the author behind Sahil's Notes.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="author" content="Sahil Dwivedi (サヒル・ディウェディ)">
+  <meta name="keywords" content="Sahil Dwivedi, サヒル・ディウェディ, about, profile, engineer, adventurer, Japan">
+  <link rel="canonical" href="https://sahildwivedi.com/about/">
+  <link rel="alternate" hreflang="en" href="https://sahildwivedi.com/about/">
+  <link rel="alternate" hreflang="ja" href="https://sahildwivedi.com/ja/about/">
+  <link rel="alternate" hreflang="x-default" href="https://sahildwivedi.com/about/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <title>About - Sahil's Notes</title>
+  <style>
+    .about-content {
+      background: var(--bg-secondary);
+      border-radius: 0.5rem;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .about-cover {
+      width: 100%;
+      max-height: 400px;
+      object-fit: cover;
+    }
+    .about-body {
+      padding: 2rem;
+    }
+    .about-body p {
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="../" class="logo">
+        <img src="../assets/image-assets/logo.png" alt="Sahil's Notes" width="40" height="40">
+        <div class="logo-text">
+          <h1>Sahil's notes</h1>
+          <p>Field notes by Sahil Dwivedi</p>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="../posts/">Blog</a>
+        <a href="../gallery/">Gallery</a>
+        <a href="../about/">About</a>
+        <a href="/ja/about/" class="lang-switch" title="日本語">JA</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode" onclick="SahilNotes.Theme.toggle()"></button>
+      </nav>
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu">
+      <a href="../posts/">Blog</a>
+      <a href="../gallery/">Gallery</a>
+      <a href="../about/">About</a>
+      <a href="/ja/about/" class="lang-switch">日本語</a>
+      <button class="theme-toggle" aria-label="Toggle dark mode" onclick="SahilNotes.Theme.toggle()" style="margin-top:0.5rem;">
+        <span class="theme-label">Toggle theme</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container py-4">
+    <h1 class="text-center mb-3">About</h1>
+    <div id="about-container" class="about-content">
+      <div id="about-skeleton">
+        <div class="skeleton" style="height:300px;"></div>
+        <div style="padding:2rem;">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text" style="width:80%;"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>Sahil's Notes | サヒル・ディウェディ (Sahil Dwivedi)</p>
+      <p>Copyright &copy; <span id="currentYear"></span> Sahil Dwivedi (サヒル・ディウェディ) | Designed and coded by Sahil Dwivedi | All rights reserved</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    const { $ } = SahilNotes;
+
+    async function loadAbout() {
+      try {
+        const response = await fetch('../assets/about.json');
+        const data = await response.json();
+        const container = $('#about-container');
+
+        if (data && data.coverImage && data.text) {
+          container.innerHTML = `
+            <img src="../${data.coverImage}" alt="About" class="about-cover" loading="lazy">
+            <div class="about-body fade-in">
+              ${data.text}
+            </div>
+          `;
+        } else {
+          container.innerHTML = '<p class="text-muted text-center" style="padding:2rem;">About information not available.</p>';
+        }
+      } catch (error) {
+        console.error('Error loading about:', error);
+        $('#about-container').innerHTML = '<p class="text-muted text-center" style="padding:2rem;">Failed to load about page.</p>';
+      }
+    }
+
+    loadAbout();
+  </script>
+</body>
+</html>

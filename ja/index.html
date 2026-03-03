@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="サヒル・ディウェディ（Sahil Dwivedi）のフィールドノート - 世界中からの旅行記、写真、技術的な文章。">
+  <meta name="keywords" content="サヒル・ディウェディ, Sahil Dwivedi, ブログ, 旅行, 写真, 日本, 技術">
+  <meta name="author" content="サヒル・ディウェディ (Sahil Dwivedi)">
+  <meta property="og:title" content="サヒルのノート - フィールドノート | サヒル・ディウェディ">
+  <meta property="og:description" content="サヒル・ディウェディ（Sahil Dwivedi）による旅行記、写真、技術的な文章のコレクション。">
+  <meta property="og:image" content="/assets/image-assets/banner.png">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://sahildwivedi.com/ja/">
+  <link rel="alternate" hreflang="en" href="https://sahildwivedi.com/">
+  <link rel="alternate" hreflang="ja" href="https://sahildwivedi.com/ja/">
+  <link rel="alternate" hreflang="x-default" href="https://sahildwivedi.com/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <title>サヒルのノート - フィールドノート | サヒル・ディウェディ (Sahil Dwivedi)</title>
+  <style>
+    body { font-family: 'Noto Sans JP', 'Inter', sans-serif; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="/ja/" class="logo">
+        <img src="../assets/image-assets/logo.png" alt="サヒルのノート" width="40" height="40">
+        <div class="logo-text">
+          <h1>サヒルのノート</h1>
+          <p>サヒル・ディウェディのフィールドノート</p>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="/ja/posts/">ブログ</a>
+        <a href="/ja/gallery/">ギャラリー</a>
+        <a href="/ja/about/">プロフィール</a>
+        <a href="/" class="lang-switch" title="English">EN</a>
+        <button class="theme-toggle" aria-label="ダークモード切替" onclick="SahilNotes.Theme.toggle()"></button>
+      </nav>
+      <button class="menu-toggle" aria-label="メニュー切替" aria-expanded="false">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu">
+      <a href="/ja/posts/">ブログ</a>
+      <a href="/ja/gallery/">ギャラリー</a>
+      <a href="/ja/about/">プロフィール</a>
+      <a href="/" class="lang-switch">English</a>
+      <button class="theme-toggle" aria-label="ダークモード切替" onclick="SahilNotes.Theme.toggle()" style="margin-top:0.5rem;">
+        <span class="theme-label">テーマ切替</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero" style="background-image: url('../assets/image-assets/banner.png');">
+    <div class="hero-content">
+      <h2>フィールドノート</h2>
+      <p>サヒル・ディウェディ（Sahil Dwivedi）のノートと考えのコレクション</p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container py-4">
+    <div class="layout-2col">
+      <!-- Main Column -->
+      <div class="col-main">
+        <section class="mb-4">
+          <h2 class="mb-2">注目の記事</h2>
+          <div id="featured-post" class="featured-post"></div>
+        </section>
+
+        <section>
+          <h2 class="mb-2">ギャラリー</h2>
+          <div id="gallery" class="gallery-grid"></div>
+          <a href="/ja/gallery/" class="link link-green mt-2" style="display:inline-block;">
+            <h3>フォトギャラリーを見る &raquo;</h3>
+          </a>
+        </section>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="col-side">
+        <div class="sidebar-section">
+          <h2>最近の記事</h2>
+          <div id="recent-posts"></div>
+          <a href="/ja/posts/" class="link link-green">
+            <h3>すべての記事を見る &raquo;</h3>
+          </a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>サヒルのノート | サヒル・ディウェディ (Sahil Dwivedi)</p>
+      <p>Copyright &copy; <span id="currentYear"></span> サヒル・ディウェディ (Sahil Dwivedi) | デザイン・コーディング: サヒル・ディウェディ | All rights reserved</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    const { $, Skeleton, Lightbox, getReadingTime } = SahilNotes;
+
+    // Show skeletons immediately
+    $('#featured-post').innerHTML = Skeleton.featuredPost();
+    $('#recent-posts').innerHTML = Skeleton.sidebarPost();
+    $('#gallery').innerHTML = Skeleton.galleryGrid(16);
+
+    // Load featured post (Japanese)
+    async function loadFeaturedPost() {
+      try {
+        const response = await fetch('../assets/posts-ja.json');
+        const posts = await response.json();
+        const container = $('#featured-post');
+
+        if (posts && posts.length > 0) {
+          // Featured post is the yacht story
+          const post = posts.find(p => p.url === 'i-sank-my-first-yacht') || posts[0];
+          const readTime = getReadingTime(post.text);
+          const truncated = post.text.replace(/<[^>]*>/g, '').substring(0, 200) + '...';
+
+          container.outerHTML = `
+            <a href="/ja/posts/?post=${post.url}" class="featured-post fade-in" id="featured-post">
+              <img src="../${post['cover-image']}" alt="${post.title}" loading="lazy">
+              <div class="featured-post-body">
+                <div class="reading-time">${SahilNotes.Icons.clock} ${readTime}</div>
+                <h3 class="card-title">${post.title}</h3>
+                <p class="card-text">${truncated}</p>
+                <span class="card-link">続きを読む &rarr;</span>
+              </div>
+            </a>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading featured post:', error);
+        $('#featured-post').innerHTML = '<p class="text-muted">注目の記事を読み込めませんでした。</p>';
+      }
+    }
+
+    // Load recent posts (Japanese)
+    async function loadRecentPosts() {
+      try {
+        const response = await fetch('../assets/posts-ja.json');
+        const posts = await response.json();
+        const container = $('#recent-posts');
+
+        if (posts && posts.length > 0) {
+          const otherPosts = posts.filter(p => p.url !== 'i-sank-my-first-yacht');
+          const shuffled = [...otherPosts].sort(() => Math.random() - 0.5);
+          const selected = shuffled.slice(0, 6);
+
+          container.innerHTML = selected.map(post => {
+            const shortText = post.text.replace(/<[^>]*>/g, '').substring(0, 60) + '...';
+            const readTime = getReadingTime(post.text);
+            return `
+              <a href="/ja/posts/?post=${post.url}" class="sidebar-post fade-in">
+                <img src="../${post['cover-image']}" alt="${post.title}" loading="lazy">
+                <div class="reading-time">${SahilNotes.Icons.clock} ${readTime}</div>
+                <h4>${post.title}</h4>
+                <p>${shortText}</p>
+                <span class="card-link">続きを読む &rarr;</span>
+              </a>
+            `;
+          }).join('');
+        }
+      } catch (error) {
+        console.error('Error loading recent posts:', error);
+        $('#recent-posts').innerHTML = '<p class="text-muted">記事を読み込めませんでした。</p>';
+      }
+    }
+
+    // Load gallery preview (Japanese)
+    async function loadGalleryPreview() {
+      try {
+        const response = await fetch('../assets/images-ja.json');
+        const allImages = await response.json();
+        const container = $('#gallery');
+
+        const shuffled = [...allImages].sort(() => Math.random() - 0.5);
+        const images = shuffled.slice(0, 16);
+
+        const galleryImages = images.map(img => ({ url: '../' + img.url, title: img.title }));
+        Lightbox.setImages(galleryImages);
+
+        container.innerHTML = images.map((img, index) => `
+          <div class="gallery-item fade-in" onclick="SahilNotes.Lightbox.open('../${img.url}', '${img.title.replace(/'/g, "\\'")}', ${index})">
+            <img src="../${img.url}" alt="${img.title}" loading="lazy">
+            <div class="gallery-item-overlay">${img.title}</div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading gallery:', error);
+        $('#gallery').innerHTML = '<p class="text-muted">ギャラリーを読み込めませんでした。</p>';
+      }
+    }
+
+    // Load all content
+    Promise.all([loadFeaturedPost(), loadRecentPosts(), loadGalleryPreview()]);
+  </script>
+</body>
+</html>

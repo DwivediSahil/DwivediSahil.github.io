@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Field notes by Sahil Dwivedi - travel stories, photography, and technical writings from around the world.">
+  <meta property="og:title" content="Sahil's Notes - Field Notes">
+  <meta property="og:description" content="A collection of travel stories, photography, and technical writings by Sahil Dwivedi.">
+  <meta property="og:image" content="/assets/image-assets/banner.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="author" content="Sahil Dwivedi (サヒル・ディウェディ)">
+  <meta name="keywords" content="Sahil Dwivedi, サヒル・ディウェディ, blog, travel, photography, Japan, technology">
+  <link rel="canonical" href="https://sahildwivedi.com/">
+  <link rel="alternate" hreflang="en" href="https://sahildwivedi.com/">
+  <link rel="alternate" hreflang="ja" href="https://sahildwivedi.com/ja/">
+  <link rel="alternate" hreflang="x-default" href="https://sahildwivedi.com/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <title>Sahil's Notes - Field Notes</title>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="/" class="logo">
+        <img src="assets/image-assets/logo.png" alt="Sahil's Notes" width="40" height="40">
+        <div class="logo-text">
+          <h1>Sahil's notes</h1>
+          <p>Field notes by Sahil Dwivedi</p>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="/posts/">Blog</a>
+        <a href="/gallery/">Gallery</a>
+        <a href="/about/">About</a>
+        <a href="/ja/" class="lang-switch" title="日本語">JA</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode" onclick="SahilNotes.Theme.toggle()"></button>
+      </nav>
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu">
+      <a href="/posts/">Blog</a>
+      <a href="/gallery/">Gallery</a>
+      <a href="/about/">About</a>
+      <a href="/ja/" class="lang-switch">日本語</a>
+      <button class="theme-toggle" aria-label="Toggle dark mode" onclick="SahilNotes.Theme.toggle()" style="margin-top:0.5rem;">
+        <span class="theme-label">Toggle theme</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero" style="background-image: url('assets/image-assets/banner.png');">
+    <div class="hero-content">
+      <h2>Field Notes</h2>
+      <p>A collection of notes and thoughts</p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container py-4">
+    <div class="layout-2col">
+      <!-- Main Column -->
+      <div class="col-main">
+        <section class="mb-4">
+          <h2 class="mb-2">Featured Post</h2>
+          <div id="featured-post" class="featured-post"></div>
+        </section>
+
+        <section>
+          <h2 class="mb-2">Gallery</h2>
+          <div id="gallery" class="gallery-grid"></div>
+          <a href="/gallery" class="link link-green mt-2" style="display:inline-block;">
+            <h3>Visit the Photo Gallery &raquo;</h3>
+          </a>
+        </section>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="col-side">
+        <div class="sidebar-section">
+          <h2>Recent Posts</h2>
+          <div id="recent-posts"></div>
+          <a href="/posts" class="link link-green">
+            <h3>View all posts &raquo;</h3>
+          </a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Lightbox (created by JS) -->
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>Sahil's Notes | サヒル・ディウェディ (Sahil Dwivedi)</p>
+      <p>Copyright &copy; <span id="currentYear"></span> Sahil Dwivedi (サヒル・ディウェディ) | Designed and coded by Sahil Dwivedi | All rights reserved</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    const { $, Skeleton, Lightbox, getReadingTime } = SahilNotes;
+
+    // Show skeletons immediately
+    $('#featured-post').innerHTML = Skeleton.featuredPost();
+    $('#recent-posts').innerHTML = Skeleton.sidebarPost();
+    $('#gallery').innerHTML = Skeleton.galleryGrid(16);
+
+    // Load featured post - explicitly set to "I Sank My First Yacht"
+    async function loadFeaturedPost() {
+      try {
+        const response = await fetch('assets/posts.json');
+        const posts = await response.json();
+        const container = $('#featured-post');
+
+        if (posts && posts.length > 0) {
+          // Featured post is explicitly set (first post in array is the yacht story)
+          const post = posts.find(p => p.url === 'i-sank-my-first-yacht') || posts[0];
+          const readTime = getReadingTime(post.text);
+          const truncated = post.text.split(' ').slice(0, 100).join(' ') + (post.text.split(' ').length > 100 ? '...' : '');
+
+          container.outerHTML = `
+            <a href="posts?post=${post.url}" class="featured-post fade-in" id="featured-post">
+              <img src="${post['cover-image']}" alt="${post.title}" loading="lazy">
+              <div class="featured-post-body">
+                <div class="reading-time">${SahilNotes.Icons.clock} ${readTime}</div>
+                <h3 class="card-title">${post.title}</h3>
+                <p class="card-text">${truncated}</p>
+                <span class="card-link">Keep reading &rarr;</span>
+              </div>
+            </a>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading featured post:', error);
+        $('#featured-post').innerHTML = '<p class="text-muted">Failed to load featured post.</p>';
+      }
+    }
+
+    // Load recent posts (excluding the featured post)
+    async function loadRecentPosts() {
+      try {
+        const response = await fetch('assets/posts.json');
+        const posts = await response.json();
+        const container = $('#recent-posts');
+
+        if (posts && posts.length > 0) {
+          // Exclude the featured yacht post from recent posts
+          const otherPosts = posts.filter(p => p.url !== 'i-sank-my-first-yacht');
+          const shuffled = [...otherPosts].sort(() => Math.random() - 0.5);
+          const selected = shuffled.slice(0, 6);
+
+          container.innerHTML = selected.map(post => {
+            const shortText = post.text.substring(0, 60) + '...';
+            const readTime = getReadingTime(post.text);
+            return `
+              <a href="posts?post=${post.url}" class="sidebar-post fade-in">
+                <img src="${post['cover-image']}" alt="${post.title}" loading="lazy">
+                <div class="reading-time">${SahilNotes.Icons.clock} ${readTime}</div>
+                <h4>${post.title}</h4>
+                <p>${shortText}</p>
+                <span class="card-link">Read More &rarr;</span>
+              </a>
+            `;
+          }).join('');
+        }
+      } catch (error) {
+        console.error('Error loading recent posts:', error);
+        $('#recent-posts').innerHTML = '<p class="text-muted">Failed to load posts.</p>';
+      }
+    }
+
+    // Load gallery preview
+    async function loadGalleryPreview() {
+      try {
+        const response = await fetch('assets/images.json');
+        const allImages = await response.json();
+        const container = $('#gallery');
+
+        const shuffled = [...allImages].sort(() => Math.random() - 0.5);
+        const images = shuffled.slice(0, 16);
+
+        // Set images for lightbox navigation
+        const galleryImages = images.map(img => ({ url: img.url, title: img.title }));
+        Lightbox.setImages(galleryImages);
+
+        container.innerHTML = images.map((img, index) => `
+          <div class="gallery-item fade-in" onclick="SahilNotes.Lightbox.open('${img.url}', '${img.title.replace(/'/g, "\\'")}', ${index})">
+            <img src="${img.url}" alt="${img.title}" loading="lazy">
+            <div class="gallery-item-overlay">${img.title}</div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading gallery:', error);
+        $('#gallery').innerHTML = '<p class="text-muted">Failed to load gallery.</p>';
+      }
+    }
+
+    // Load all content
+    Promise.all([loadFeaturedPost(), loadRecentPosts(), loadGalleryPreview()]);
+  </script>
+</body>
+</html>

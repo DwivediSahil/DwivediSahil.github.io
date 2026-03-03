@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="サヒル・ディウェディ（Sahil Dwivedi）のフォトギャラリー - 世界中からの写真コレクション。">
+  <meta name="keywords" content="サヒル・ディウェディ, Sahil Dwivedi, 写真, ギャラリー, 旅行, 日本">
+  <meta name="author" content="サヒル・ディウェディ (Sahil Dwivedi)">
+  <meta property="og:title" content="ギャラリー - サヒルのノート | サヒル・ディウェディ">
+  <meta property="og:description" content="サヒル・ディウェディの写真コレクション。">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://sahildwivedi.com/ja/gallery/">
+  <link rel="alternate" hreflang="en" href="https://sahildwivedi.com/gallery/">
+  <link rel="alternate" hreflang="ja" href="https://sahildwivedi.com/ja/gallery/">
+  <link rel="alternate" hreflang="x-default" href="https://sahildwivedi.com/gallery/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <title>ギャラリー - サヒルのノート | サヒル・ディウェディ (Sahil Dwivedi)</title>
+  <style>
+    body { font-family: 'Noto Sans JP', 'Inter', sans-serif; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="/ja/" class="logo">
+        <img src="../../assets/image-assets/logo.png" alt="サヒルのノート" width="40" height="40">
+        <div class="logo-text">
+          <h1>サヒルのノート</h1>
+          <p>サヒル・ディウェディのフィールドノート</p>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="/ja/posts/">ブログ</a>
+        <a href="/ja/gallery/">ギャラリー</a>
+        <a href="/ja/about/">プロフィール</a>
+        <a href="/gallery/" class="lang-switch" title="English">EN</a>
+        <button class="theme-toggle" aria-label="ダークモード切替" onclick="SahilNotes.Theme.toggle()"></button>
+      </nav>
+      <button class="menu-toggle" aria-label="メニュー切替" aria-expanded="false">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu">
+      <a href="/ja/posts/">ブログ</a>
+      <a href="/ja/gallery/">ギャラリー</a>
+      <a href="/ja/about/">プロフィール</a>
+      <a href="/gallery/" class="lang-switch">English</a>
+      <button class="theme-toggle" aria-label="ダークモード切替" onclick="SahilNotes.Theme.toggle()" style="margin-top:0.5rem;">
+        <span class="theme-label">テーマ切替</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container py-4">
+    <h1 class="text-center mb-3" id="gallery-title">フォトギャラリー</h1>
+    <p class="text-center text-muted mb-2">サヒル・ディウェディ（Sahil Dwivedi）の写真コレクション</p>
+
+    <!-- Search Box -->
+    <div class="search-box gallery-search">
+      <span class="search-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </span>
+      <input type="text" id="gallery-search" class="search-input" placeholder="写真を検索..." autocomplete="off">
+    </div>
+    <p id="search-results-count" class="search-results-count hidden"></p>
+
+    <div id="gallery" class="gallery-grid"></div>
+    <div id="loading" class="text-center py-2 hidden">
+      <p class="text-muted">読み込み中...</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>サヒルのノート | サヒル・ディウェディ (Sahil Dwivedi)</p>
+      <p>Copyright &copy; <span id="currentYear"></span> サヒル・ディウェディ (Sahil Dwivedi) | デザイン・コーディング: サヒル・ディウェディ | All rights reserved</p>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    const { $, Skeleton, Lightbox, debounce } = SahilNotes;
+
+    let allImages = [];
+    let filteredImages = [];
+    let displayedCount = 0;
+    const batchSize = 24;
+    const container = $('#gallery');
+    const loading = $('#loading');
+    const searchInput = $('#gallery-search');
+    const resultsCount = $('#search-results-count');
+
+    container.innerHTML = Skeleton.galleryGrid(batchSize);
+
+    async function loadGallery() {
+      try {
+        const response = await fetch('../../assets/images-ja.json');
+        allImages = await response.json();
+        filteredImages = allImages;
+
+        Lightbox.setImages(allImages.map(img => ({ url: '../../' + img.url, title: img.title })));
+
+        displayedCount = 0;
+        container.innerHTML = '';
+        loadMoreImages();
+        setupInfiniteScroll();
+        setupSearch();
+      } catch (error) {
+        console.error('Error loading gallery:', error);
+        container.innerHTML = '<p class="text-muted text-center">ギャラリーを読み込めませんでした。</p>';
+      }
+    }
+
+    function renderImage(img, index) {
+      const item = document.createElement('div');
+      item.className = 'gallery-item fade-in';
+      item.onclick = () => SahilNotes.Lightbox.open('../../' + img.url, img.title, index);
+      item.innerHTML = `
+        <img src="../../${img.url}" alt="${img.title}" loading="lazy" class="loading" onload="this.classList.remove('loading');this.classList.add('loaded');">
+        <div class="gallery-item-overlay">${img.title}</div>
+      `;
+      return item;
+    }
+
+    function loadMoreImages() {
+      if (displayedCount >= filteredImages.length) {
+        loading.classList.add('hidden');
+        return;
+      }
+
+      loading.classList.remove('hidden');
+
+      const nextBatch = filteredImages.slice(displayedCount, displayedCount + batchSize);
+
+      nextBatch.forEach((img, i) => {
+        const index = displayedCount + i;
+        container.appendChild(renderImage(img, index));
+      });
+
+      displayedCount += nextBatch.length;
+      loading.classList.add('hidden');
+    }
+
+    function searchImages(query) {
+      const q = query.toLowerCase().trim();
+      displayedCount = 0;
+      container.innerHTML = '';
+
+      if (!q) {
+        filteredImages = allImages;
+        resultsCount.classList.add('hidden');
+        Lightbox.setImages(allImages.map(img => ({ url: '../../' + img.url, title: img.title })));
+      } else {
+        filteredImages = allImages.filter(img =>
+          img.title.toLowerCase().includes(q) ||
+          (img.date && img.date.toLowerCase().includes(q))
+        );
+        resultsCount.textContent = `${filteredImages.length}枚の写真が見つかりました`;
+        resultsCount.classList.remove('hidden');
+        Lightbox.setImages(filteredImages.map(img => ({ url: '../../' + img.url, title: img.title })));
+      }
+
+      if (filteredImages.length === 0) {
+        container.innerHTML = '<div class="no-results"><p>検索条件に一致する写真がありません。</p></div>';
+      } else {
+        loadMoreImages();
+      }
+    }
+
+    function setupSearch() {
+      const debouncedSearch = debounce(searchImages, 200);
+      searchInput.addEventListener('input', (e) => debouncedSearch(e.target.value));
+    }
+
+    function setupInfiniteScroll() {
+      window.addEventListener('scroll', () => {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+          loadMoreImages();
+        }
+      });
+    }
+
+    loadGallery();
+  </script>
+</body>
+</html>

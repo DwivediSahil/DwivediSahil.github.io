@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="サヒル・ディウェディ（Sahil Dwivedi）のブログ記事 - 旅行記、技術的な文章など。">
+  <meta name="keywords" content="サヒル・ディウェディ, Sahil Dwivedi, ブログ, 旅行, 技術, 日本">
+  <meta name="author" content="サヒル・ディウェディ (Sahil Dwivedi)">
+  <meta property="og:title" content="ブログ - サヒルのノート | サヒル・ディウェディ">
+  <meta property="og:description" content="旅行記、技術的な文章などを掲載するブログ。">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://sahildwivedi.com/ja/posts/">
+  <link rel="alternate" hreflang="en" href="https://sahildwivedi.com/posts/">
+  <link rel="alternate" hreflang="ja" href="https://sahildwivedi.com/ja/posts/">
+  <link rel="alternate" hreflang="x-default" href="https://sahildwivedi.com/posts/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/main.css">
+  <title>ブログ - サヒルのノート | サヒル・ディウェディ (Sahil Dwivedi)</title>
+  <style>
+    body { font-family: 'Noto Sans JP', 'Inter', sans-serif; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="/ja/" class="logo">
+        <img src="../../assets/image-assets/logo.png" alt="サヒルのノート" width="40" height="40">
+        <div class="logo-text">
+          <h1>サヒルのノート</h1>
+          <p>サヒル・ディウェディのフィールドノート</p>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="/ja/posts/">ブログ</a>
+        <a href="/ja/gallery/">ギャラリー</a>
+        <a href="/ja/about/">プロフィール</a>
+        <a href="/posts/" class="lang-switch" title="English">EN</a>
+        <button class="theme-toggle" aria-label="ダークモード切替" onclick="SahilNotes.Theme.toggle()"></button>
+      </nav>
+      <button class="menu-toggle" aria-label="メニュー切替" aria-expanded="false">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu">
+      <a href="/ja/posts/">ブログ</a>
+      <a href="/ja/gallery/">ギャラリー</a>
+      <a href="/ja/about/">プロフィール</a>
+      <a href="/posts/" class="lang-switch">English</a>
+      <button class="theme-toggle" aria-label="ダークモード切替" onclick="SahilNotes.Theme.toggle()" style="margin-top:0.5rem;">
+        <span class="theme-label">テーマ切替</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container py-4">
+    <h1 id="page-title" class="text-center mb-3">ブログ記事</h1>
+
+    <!-- Search Box -->
+    <div id="search-container" class="search-box">
+      <span class="search-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </span>
+      <input type="text" id="search-input" class="search-input" placeholder="記事を検索..." autocomplete="off">
+    </div>
+
+    <!-- Posts Grid -->
+    <div id="posts-grid" class="grid grid-3"></div>
+
+    <!-- Single Post View -->
+    <div id="single-post" class="hidden">
+      <div class="layout-2col">
+        <div class="col-main">
+          <div id="post-content" class="post-single"></div>
+        </div>
+        <aside class="col-side">
+          <div class="sidebar-section">
+            <h2>他の記事</h2>
+            <div id="related-posts"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>サヒルのノート | サヒル・ディウェディ (Sahil Dwivedi)</p>
+      <p>Copyright &copy; <span id="currentYear"></span> サヒル・ディウェディ (Sahil Dwivedi) | デザイン・コーディング: サヒル・ディウェディ | All rights reserved</p>
+    </div>
+  </footer>
+
+  <script src="../../assets/js/main.js"></script>
+  <script>
+    const { $, $$, Skeleton, getReadingTime, debounce } = SahilNotes;
+
+    let allPosts = [];
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const postParam = urlParams.get('post');
+
+    if (postParam) {
+      loadSinglePost(postParam);
+    } else {
+      loadPostsList();
+    }
+
+    async function loadPostsList() {
+      const container = $('#posts-grid');
+      container.innerHTML = Skeleton.card().repeat(6);
+
+      try {
+        const response = await fetch('../../assets/posts-ja.json');
+        allPosts = await response.json();
+        renderPosts(allPosts);
+        setupSearch();
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        container.innerHTML = '<p class="text-muted text-center">記事を読み込めませんでした。</p>';
+      }
+    }
+
+    function renderPosts(posts) {
+      const container = $('#posts-grid');
+
+      if (posts.length === 0) {
+        container.innerHTML = '<div class="no-results"><p>検索条件に一致する記事がありません。</p></div>';
+        return;
+      }
+
+      container.innerHTML = posts.map(post => {
+        const readTime = getReadingTime(post.text);
+        return `
+          <a href="/ja/posts/?post=${post.url}" class="card fade-in">
+            <img src="../../${post['cover-image']}" alt="${post.title}" class="card-image" loading="lazy">
+            <div class="card-body">
+              <div class="reading-time">${SahilNotes.Icons.clock} ${readTime}</div>
+              <h3 class="card-title">${post.title}</h3>
+              <p class="card-text">${post.subtitle || ''}</p>
+              <span class="card-link">続きを読む &rarr;</span>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    function setupSearch() {
+      const input = $('#search-input');
+      const search = debounce((query) => {
+        const q = query.toLowerCase().trim();
+        if (!q) {
+          renderPosts(allPosts);
+          return;
+        }
+        const filtered = allPosts.filter(post =>
+          post.title.toLowerCase().includes(q) ||
+          (post.subtitle && post.subtitle.toLowerCase().includes(q)) ||
+          post.text.toLowerCase().includes(q)
+        );
+        renderPosts(filtered);
+      }, 200);
+
+      input.addEventListener('input', (e) => search(e.target.value));
+    }
+
+    async function loadSinglePost(postUrl) {
+      $('#search-container').classList.add('hidden');
+      $('#posts-grid').classList.add('hidden');
+      $('#single-post').classList.remove('hidden');
+
+      const postContent = $('#post-content');
+      postContent.innerHTML = `
+        <div style="padding:2rem;">
+          ${Skeleton.featuredPost()}
+        </div>
+      `;
+
+      try {
+        const response = await fetch('../../assets/posts-ja.json');
+        const posts = await response.json();
+        const post = posts.find(p => p.url === postUrl);
+
+        if (post) {
+          const readTime = getReadingTime(post.text);
+          const pageUrl = window.location.href;
+
+          $('#page-title').textContent = post.title;
+          document.title = `${post.title} - サヒルのノート | サヒル・ディウェディ`;
+
+          postContent.innerHTML = `
+            <img src="../../${post['cover-image']}" alt="${post.title}">
+            <div class="post-single-body">
+              <div class="reading-time">${SahilNotes.Icons.clock} ${readTime}</div>
+              <h1>${post.title}</h1>
+              <p class="post-author" style="color:var(--text-muted);margin-bottom:1rem;">著者: ${post.author || 'サヒル・ディウェディ (Sahil Dwivedi)'}</p>
+              <div class="post-single-content">
+                ${post.text}
+              </div>
+              <div class="post-meta">
+                <p>公開日: ${post.datetime || '不明'}</p>
+                <p>著者: サヒル・ディウェディ (Sahil Dwivedi)</p>
+              </div>
+            </div>
+          `;
+          postContent.classList.add('fade-in');
+
+          loadRelatedPosts(posts, postUrl);
+        } else {
+          postContent.innerHTML = `
+            <div class="error-page" style="min-height:40vh;">
+              <h2>記事が見つかりません</h2>
+              <p>お探しの記事が見つかりませんでした。</p>
+              <a href="/ja/posts/" class="btn btn-primary">すべての記事を見る</a>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading post:', error);
+        postContent.innerHTML = '<p class="text-muted text-center" style="padding:2rem;">記事を読み込めませんでした。</p>';
+      }
+    }
+
+    function loadRelatedPosts(posts, currentUrl) {
+      const container = $('#related-posts');
+      const otherPosts = posts.filter(p => p.url !== currentUrl);
+      const shuffled = [...otherPosts].sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, 5);
+
+      container.innerHTML = selected.map(post => {
+        const readTime = getReadingTime(post.text);
+        const shortText = post.text.replace(/<[^>]*>/g, '').substring(0, 60) + '...';
+        return `
+          <a href="/ja/posts/?post=${post.url}" class="sidebar-post fade-in">
+            <img src="../../${post['cover-image']}" alt="${post.title}" loading="lazy">
+            <div class="reading-time">${SahilNotes.Icons.clock} ${readTime}</div>
+            <h4>${post.title}</h4>
+            <p>${shortText}</p>
+            <span class="card-link">続きを読む &rarr;</span>
+          </a>
+        `;
+      }).join('');
+    }
+  </script>
+</body>
+</html>
